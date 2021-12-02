@@ -8,14 +8,21 @@
 
 void show_state(int numLives);
 
-int main()
+
+
+int main(int argc, char const *argv[])
 {
+    if (argc != 2)
+    {
+        return -1;
+    }
+    
     srand(time(NULL));
 
     char guessWords[MAXNUMWORDS][MAXWORDLENGTH];
     int wordsReadIn = 0;
 
-    FILE *pToFile = fopen("text.txt", "r");
+    FILE *pToFile = fopen(argv[1], "r");
 
     if (pToFile == NULL)
     {
