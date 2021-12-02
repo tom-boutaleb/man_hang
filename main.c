@@ -3,22 +3,44 @@
 #include <string.h>
 #include <time.h>
 
+#define MAXNUMWORDS 2048
+#define MAXWORDLENGTH 64
+
+void show_state(int numLives);
+
 int main()
 {
     srand(time(NULL));
-    char guessWords[][16] = {
-        "green",
-        "yellow",
-        "purple",
-        "windows",
-        "linux",
-        "apple"
-    };
+
+    char guessWords[MAXNUMWORDS][MAXWORDLENGTH];
+    int wordsReadIn = 0;
+
+    FILE *pToFile = fopen("text.txt", "r");
+
+    if (pToFile == NULL)
+    {
+        printf("L'ouverture du fichier a échoué");
+        return -1;
+    }
+    
+
+    char input[64];
+    
+    while (fgets(input, 63, pToFile))
+    {
+        sscanf(input, "%s", guessWords[wordsReadIn]);
+        printf("Scanné: Donnée: %s guessWords[%d]:%s\n", input, wordsReadIn ,guessWords[wordsReadIn]);
+        wordsReadIn++;
+    }
+    
+    fclose(pToFile);
+
+    printf("Totale mots lus: %d\n", wordsReadIn);
 
     //index pour mot aléatoire
-    int randomIndex = rand() % 6;
+    int randomIndex = rand() % wordsReadIn;
 
-    int numLives = 5;
+    int numLives = 6;
     int numCorrect = 0;
     int oldCorrect = 0;
 
@@ -55,7 +77,7 @@ int main()
         }
 
         printf("\n");
-
+        show_state(numLives);
         printf("Nombre de lettres trouvées: %d\n", numCorrect);
         printf("Entrez une lettre: \n");
         fgets(guess, 16, stdin);
@@ -88,7 +110,7 @@ int main()
         if (oldCorrect == numCorrect)
         {
             numLives--;
-            printf("Mauvaise lettre désolé.");
+            printf("Mauvaise lettre désolé.\n");
             if (numLives == 0)
             {
                 break;
@@ -97,7 +119,7 @@ int main()
         }
         else
         {
-            printf("Lettre trouvé! :)");
+            printf("Lettre trouvé! :)\n");
         }
         
         
@@ -111,6 +133,7 @@ int main()
     }
     else if (numLives == 0)
     {
+        show_state(numLives);
         printf("\nDésolé vous avez perdu le mot était: %s\n", guessWords[randomIndex]);
     }
     else
@@ -124,4 +147,34 @@ int main()
 
     
     return 0;
+}
+
+void show_state(int numLives)
+{
+    switch (numLives)
+    {
+    case 0:
+        printf("  +---+  \n  |   |  \n  O   |  \n /|\\  |  \n / \\  |  \n      |  \n=========\n");
+        break;
+    case 1:
+        printf("  +---+  \n  |   |  \n  O   |  \n /|\\  |  \n /    |  \n      |  \n=========\n");
+        break;
+    case 2:
+        printf("  +---+  \n  |   |  \n  O   |  \n /|\\  |  \n      |  \n      |  \n=========\n");
+        break;
+    case 3:
+        printf("  +---+  \n  |   |  \n  O   |  \n /|   |  \n      |  \n      |  \n=========\n");
+        break;
+    case 4:
+        printf("  +---+  \n  |   |  \n  O   |  \n  |   |  \n      |  \n      |  \n=========\n");
+        break;
+    case 5:
+        printf("  +---+  \n  |   |  \n  O   |  \n      |  \n      |  \n      |  \n=========\n");
+        break;
+    case 6:
+        printf("  +---+\n  |   |  \n      |  \n      |  \n      |  \n      |  \n=========\n");
+        break;
+    default:
+        break;
+    }
 }

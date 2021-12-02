@@ -1,0 +1,6 @@
+green
+yellow
+purple
+windows
+linux
+apple
