@@ -1,57 +1,30 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
+#include "./my.h"
 
-#define MAXNUMWORDS 2048
-#define MAXWORDLENGTH 64
-
-void show_state(int numLives);
-
-
-
-int main(int argc, char const *argv[])
+int main(int argc, char *argv[])
 {
+    int tmp = 0;
+    t_file toto;
     if (argc != 2)
     {
         return -1;
     }
     
+    tmp = read_file(&toto, argv[1]);
+    printf("%s\n", toto.file_content[0]);
+
     srand(time(NULL));
-
-    char guessWords[MAXNUMWORDS][MAXWORDLENGTH];
-    int wordsReadIn = 0;
-
-    FILE *pToFile = fopen(argv[1], "r");
-
-    if (pToFile == NULL)
-    {
-        printf("L'ouverture du fichier a échoué");
-        return -1;
-    }
     
 
-    char input[64];
     
-    while (fgets(input, 63, pToFile))
-    {
-        sscanf(input, "%s", guessWords[wordsReadIn]);
-        printf("Scanné: Donnée: %s guessWords[%d]:%s\n", input, wordsReadIn ,guessWords[wordsReadIn]);
-        wordsReadIn++;
-    }
-    
-    fclose(pToFile);
-
-    printf("Totale mots lus: %d\n", wordsReadIn);
 
     //index pour mot aléatoire
-    int randomIndex = rand() % wordsReadIn;
+    int randomIndex = rand() % tmp;
 
     int numLives = 6;
     int numCorrect = 0;
     int oldCorrect = 0;
 
-    int lengthOfWord = strlen(guessWords[randomIndex]);
+    int lengthOfWord = strlen(toto.file_content[randomIndex]);
     int letterGuessed[8] = {0, 0, 0, 0, 0, 0, 0, 0};
 
     int quit = 0;  
@@ -62,7 +35,7 @@ int main(int argc, char const *argv[])
     char letterEntered;
 
     printf("guessWords: %s random int: %d lengthOfWord: %d\n\n",
-        guessWords[randomIndex],
+        toto.file_content[randomIndex],
         randomIndex,
         lengthOfWord);
 
@@ -75,7 +48,7 @@ int main(int argc, char const *argv[])
         {
             if (letterGuessed[loopIndex] ==1)
             {
-                printf("%c", guessWords[randomIndex][loopIndex]);
+                printf("%c", toto.file_content[randomIndex][loopIndex]);
             }
             else
             {
@@ -106,7 +79,7 @@ int main(int argc, char const *argv[])
             {
                 continue;
             }
-            if (letterEntered == guessWords[randomIndex][loopIndex])
+            if (letterEntered == toto.file_content[randomIndex][loopIndex])
             {
                 letterGuessed[loopIndex] = 1;
                 numCorrect++;
@@ -141,7 +114,7 @@ int main(int argc, char const *argv[])
     else if (numLives == 0)
     {
         show_state(numLives);
-        printf("\nDésolé vous avez perdu le mot était: %s\n", guessWords[randomIndex]);
+        printf("\nDésolé vous avez perdu le mot était: %s\n", toto.file_content[randomIndex]);
     }
     else
     {
@@ -153,6 +126,7 @@ int main(int argc, char const *argv[])
     
 
     
+
     return 0;
 }
 
@@ -184,4 +158,45 @@ void show_state(int numLives)
     default:
         break;
     }
+}
+
+int read_file(t_file *file, char *str) 
+{
+    struct stat st;
+    char *tmp = NULL;
+    int fd = 0;
+    int size = 0;
+    int i = 0;
+
+
+	stat(str, &st);
+    tmp = malloc(sizeof(char) * st.st_size);
+    fd = open(str, O_RDONLY);
+    if (fd < 1)
+    {
+        printf("L'ouverture du fichier a échoué");
+        return -1;
+    }
+    
+    read(fd, tmp, st.st_size);
+    size = size_eol(tmp);
+    file->file_content = malloc(sizeof(char *) * size + 1);
+    for (i = 0; i <= size; i++)
+    {
+    file->file_content[i] = strtok(tmp, "\n");
+    }
+    printf("Totale mots lus: %d\n", i);
+    file->file_content[i] = NULL;
+    return i;
+}
+
+
+int size_eol(char *str)
+{
+    int j = 0;
+    for (int i = 0; str[i] != 0; i++) {
+        if (str[i] == '\n') 
+            j++;
+    }
+    return (j);
 }
