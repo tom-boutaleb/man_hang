@@ -2,29 +2,21 @@
 
 int main(int argc, char *argv[])
 {
-    int tmp = 0;
-    t_file toto;
-    if (argc != 2)
-    {
-        return -1;
-    }
+    //Nombre de mots et dictionnaire
+    int words = 0;
+    t_file dictionnary;
+
+    //Longueur mots
+    int lengthOfWord = atoi(argv[2]);
+
+    //Index pour mot aléatoire
+    int randomIndex = 0;
     
-    tmp = read_file(&toto, argv[1]);
-    printf("%s\n", toto.file_content[0]);
-
-    srand(time(NULL));
-    
-
-    
-
-    //index pour mot aléatoire
-    int randomIndex = rand() % tmp;
-
+    //Gestion vie
     int numLives = 6;
     int numCorrect = 0;
     int oldCorrect = 0;
 
-    int lengthOfWord = strlen(toto.file_content[randomIndex]);
     int letterGuessed[8] = {0, 0, 0, 0, 0, 0, 0, 0};
 
     int quit = 0;  
@@ -33,11 +25,24 @@ int main(int argc, char *argv[])
 
     char guess[16];
     char letterEntered;
+    if (argc != 3 && lengthOfWord < 5 && lengthOfWord < 64)
+    {
+        return -1;
+    }
+    
+    //Récupération des mots de la bonne taille présent dans le fichier
+    words = read_file(&dictionnary, argv[1], lengthOfWord);
 
+    //Génération Index aléatoire
+    srand(time(NULL));
+    randomIndex = rand() % words;
+    
+    //--------------------DEBUG---------------------------------
     printf("guessWords: %s random int: %d lengthOfWord: %d\n\n",
-        toto.file_content[randomIndex],
+        dictionnary.file_content[randomIndex],
         randomIndex,
         lengthOfWord);
+    //--------------------DEBUG---------------------------------
 
     // boucle du jeu
     while (numCorrect < lengthOfWord)
@@ -48,7 +53,7 @@ int main(int argc, char *argv[])
         {
             if (letterGuessed[loopIndex] ==1)
             {
-                printf("%c", toto.file_content[randomIndex][loopIndex]);
+                printf("%c", dictionnary.file_content[randomIndex][loopIndex]);
             }
             else
             {
@@ -79,7 +84,7 @@ int main(int argc, char *argv[])
             {
                 continue;
             }
-            if (letterEntered == toto.file_content[randomIndex][loopIndex])
+            if (letterEntered == dictionnary.file_content[randomIndex][loopIndex])
             {
                 letterGuessed[loopIndex] = 1;
                 numCorrect++;
@@ -100,11 +105,7 @@ int main(int argc, char *argv[])
         else
         {
             printf("Lettre trouvé! :)\n");
-        }
-        
-        
-         
-         
+        }    
     }
 
     if (quit == 1)
@@ -114,18 +115,12 @@ int main(int argc, char *argv[])
     else if (numLives == 0)
     {
         show_state(numLives);
-        printf("\nDésolé vous avez perdu le mot était: %s\n", toto.file_content[randomIndex]);
+        printf("\nDésolé vous avez perdu le mot était: %s\n", dictionnary.file_content[randomIndex]);
     }
     else
     {
         printf("\nVous avez gagné !\n");
     }
-    
-    
-    
-    
-
-    
 
     return 0;
 }
@@ -160,7 +155,7 @@ void show_state(int numLives)
     }
 }
 
-int read_file(t_file *file, char *str) 
+int read_file(t_file *file, char *str, int wordLength) 
 {
     struct stat st;
     char *tmp = NULL;
@@ -181,12 +176,25 @@ int read_file(t_file *file, char *str)
     read(fd, tmp, st.st_size);
     size = size_eol(tmp);
     file->file_content = malloc(sizeof(char *) * size + 1);
-    for (i = 0; i <= size; i++)
-    {
-    file->file_content[i] = strtok(tmp, "\n");
+    char * strToken = strtok ( tmp, "\n" );
+    while ( strToken != NULL ) {
+        if ((int)strlen(strToken) == wordLength)
+        {
+            file->file_content[i] = strToken;
+            i++;
+        }
+        
+        // On demande le token suivant.
+        strToken = strtok ( NULL, "\n" );
     }
     printf("Totale mots lus: %d\n", i);
     file->file_content[i] = NULL;
+    if (i == 0)
+    {
+        printf("Le fichier ne contient aucun mot de la taille souhaité");
+        return -1;
+    }
+    
     return i;
 }
 
